@@ -1,0 +1,6 @@
+__debug_bin
+movie-data-api
+*.vscode
+data.db
+.DS_Store
+
