@@ -42,6 +42,7 @@ Movie data set https://github.com/prust/wikipedia-movie-data
 
 OpenAPI3 [spec](https://github.com/AlexsJones/movie-data-api/blob/main/pkg/swagger.yaml) is used to generate the server types and handlers.
 
+An S3 provider service will intermittently fetch and store movie data ( only once per file ).
 <img src="images/001.png" width="550px;"/>
 
 ### Infrastructure architecture diagram
