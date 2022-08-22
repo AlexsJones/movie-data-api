@@ -2,7 +2,7 @@
 
 A hypothetical challenge to manage movie data and save that data to a database from remote providers such as S3.
 
-It would be accessed via a REST API.
+It would be accessed via an OpenAPI3 compliant REST API.
 
 <img src="images/demo.gif" width="750px;" />
 
@@ -39,6 +39,8 @@ Movie data set https://github.com/prust/wikipedia-movie-data
 ## Architecture
 
 ### Code architecture diagram
+
+OpenAPI3 [spec](https://github.com/AlexsJones/movie-data-api/blob/main/pkg/swagger.yaml) is used to generate the server types and handlers.
 
 <img src="images/001.png" width="550px;"/>
 
