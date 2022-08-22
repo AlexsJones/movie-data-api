@@ -3,6 +3,10 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 3
+aws:
+  region: us-east-1
+  profile: default
+  bucket: movie-data-api
 postgres:
   user: app
   password: secret

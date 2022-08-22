@@ -34,19 +34,30 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: "AWS_BUCKET_NAME"
+            value: "{{ .Values.aws.bucket }}"
+          - name: "AWS_REGION"
+            value: "{{ .Values.aws.region }}"
+          - name: "AWS_ACCESS_KEY_ID"
+            valueFrom:
+              secretKeyRef:
+                name: "aws-auth"
+                key: "AWS_ACCESS_KEY_ID"
+          - name: "AWS_SECRET_ACCESS_KEY"
+            valueFrom:
+              secretKeyRef:
+                name: "aws-auth"
+                key: "AWS_SECRET_ACCESS_KEY"
           args:
           - --postgres-password={{ .Values.postgres.password }}
-          - --postgres-url={{ .Values.postgres.host }}
+          - --postgres-url={{ .Values.postgres.url }}
           - --postgres-port={{ .Values.postgres.port }}
           - --postgres-user={{ .Values.postgres.user }}
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

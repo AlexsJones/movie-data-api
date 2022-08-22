@@ -4,26 +4,8 @@ A hypothetical challenge to manage movie data and save that data to a database f
 
 It would be accessed via a REST API.
 
-<img src="images/004.png" width="650px;" />
+<img src="images/demo.gif" width="750px;" />
 
-_Uploading_
-
-```
-curl -X POST http://localhost:8080/movie -H 'Content-Type: application/json' -d '{
-    "title": "Avengers: Age of Ultron",
-    "year": 2015,
-    "cast": [
-      "Robert Downey, Jr.",
-      "Chris Evans",
-      "Chris Hemsworth",
-      "Mark Ruffalo"
-    ],
-    "genres": [
-      "Action"
-    ]
-}'
-"OK"
-```
 
 ### Brief
 
@@ -46,8 +28,9 @@ curl -X POST http://localhost:8080/movie -H 'Content-Type: application/json' -d 
 **Assumptions**
 
 - Each S3 update will be a single file with N movie entries
-- It is not clear how S3 will send the data, I will assume the use of S3 event [notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html)
-- "API must return response time within 5ms"  (  unclear whether this is first or last byte, past demarkation point or not ), I will assume that this is first byte
+- There is no specification for data to be loaded immediately from S3 into the movie-data-api
+- 5ms latency requirement is from ingress to service first byte.
+
 
 ### Resources
 
@@ -69,30 +52,46 @@ _When the statefulset is created it dynamically fetches and injects the PG secre
 
 <img src="images/003.png" width="550px;"/>
 
-## Setup to reproduce
-
-- Requires the following global envs set ( these will produce a Kubernetes secret which is injected into the STS)
-  - AWS_ACCESS_KEY_ID
-  - AWS_SECRET_ACCESS_KEY
-  - AWS_REGION
-  - AWS_BUCKET
+## Installation
 
 - Create a 3 node MicroK8s cluster on hardware or cloud ( you could also use K.I.N.D/minikube but figure out your own distributed block storage)
-- MicroK8s enable `mayastor dns metallb` This will give you DNS, distributed storage and ingress
-- Run `make up` 
+  - MicroK8s enable `mayastor dns metallb` This will give you DNS, distributed storage and ingress
+
+- Install your AWS credentials into the cluster namespace
+```
+kubectl create secret generic aws-auth --from-literal=AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --from-literal=AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+````
+_This is used by the statefulset to construct auth_
+
+```
+          - name: "AWS_ACCESS_KEY_ID"
+            valueFrom:
+              secretKeyRef:
+                name: "aws-auth"
+                key: "AWS_ACCESS_KEY_ID"
+```
+
+
+- Run `AWS_REGION=$AWS_REGION AWS_BUCKET_NAME=<existing bucket name> make up` 
 - Query the service via the cluster Load balancer or port forwarding ( see resources below )
 
+### Testing
 
-### Local development
+_Replace with your bucket name_
 
-When connecting to a PG cluster locally with a port forward, you can use the following command to connect to the cluster:
-
-```
-go run main.go --postgres-password=$(kubectl get secrets movie-db-cluster-app -o jsonpath="{.data.password}" | base64 -d)
 
 ```
+#!/bin/bash
+for i in scripts/00*; do
+    aws s3 cp $i s3://<existing bucket name>/$i
+done
+```
 
-_Testing a query_
+Port forward the postgres DB if you wish to run locally 
+
+`kubectl port-forward svc/movie-db-cluster-rw 5432:5432`
+
+
 
 ```
 curl localhost:8080/movies/year/2015
