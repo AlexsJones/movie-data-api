@@ -47,6 +47,8 @@ An S3 provider service will intermittently fetch and store movie data ( only onc
 
 ### Infrastructure architecture diagram
 
+The default storageclass is set to mayastor-3 which is a highly replicated distributed block storage on MicroK8s.
+
 <img src="images/002.png" width="550px;"/>
 
 
